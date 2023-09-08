@@ -7,9 +7,6 @@ package portafolio02;
  */
 public class CrearMatriz {
 
-    public static void main(String[] args) {
-
-    }
 
     // Método para crear una matriz con las dimensiones especificadas
     public static int[][] crearMatriz(int rows, int columns) {

@@ -7,8 +7,6 @@ package portafolio02;
  */
 public class BuscarNumMayor {
 
-    public static void main(String[] args) {
-    }
 
    public static int biggestNum(int[][] matriz) {
     int result = Integer.MIN_VALUE; // Initialize result to the smallest possible integer value

@@ -6,9 +6,7 @@ package portafolio02;
  * @author djjav
  */
 public class NumerosPrimos {
-  public static void main(String[] args) {
-      
-    }
+ 
   
     public static String filterNumbers() {
         int num = 2;

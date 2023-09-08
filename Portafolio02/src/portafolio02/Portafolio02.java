@@ -48,7 +48,7 @@ public class Portafolio02 {
         do {
             switch (num) {
                 case 1:
-                    Factorial factorial = new Factorial();
+                    Factorial factorial = new Factorial();                    
                     factorial.findFactorial();
                     break;
                 case 2:
