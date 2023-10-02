@@ -10,6 +10,7 @@ import Layer2_BusinessLogic.BL_Accounting;
 import Layer2_BusinessLogic.BL_Cliente;
 import Layer2_BusinessLogic.BL_DetalleFactura;
 import Layer2_BusinessLogic.BL_EncabezadoFactura;
+import Layer4_Entities.Ent_Cliente;
 import Layer4_Entities.Ent_DetalleFactura;
 import Layer4_Entities.Ent_EncabezadoFactura;
 import java.awt.Color;
@@ -44,6 +45,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
     private static boolean hasSize = false;
     private static boolean hasQuantity = false;
     private static boolean isResetting = false;// avoids conflict when cleaning form
+    private static boolean openGhostReceipt = true; //will create only one ghost receipt by session
     // Your existing array
     Object[] addSubtractingProducts = { /* your initial values here */};
 
@@ -52,13 +54,9 @@ public class frmPlatform extends javax.swing.JInternalFrame {
      */
     public frmPlatform() {
         initComponents();
-        //get todays date and current time
-        Substracting accounting = new Substracting(); // Create an instance of Accounting
-        txtDate.setText(accounting.getFechaActual());
-        currentTimeUpdater();
-        //initialize table titles
-        newTable();
-        // Initialize or add rows in the constructor.
+        //Visual receipt fields cleaner
+        visualReceiptInitializer();
+        //table initializer
         Object[] oneRow = new Object[4];
         oneRow[0] = "";
         oneRow[1] = "";
@@ -80,6 +78,24 @@ public class frmPlatform extends javax.swing.JInternalFrame {
 
     public List<Object[]> getRows() {
         return receiptLines;
+    }
+
+    //Visual receipt fields cleaner
+    private void visualReceiptInitializer() {
+        //get todays date and current time
+        Substracting accounting = new Substracting(); // Create an instance of Accounting
+        txtDate.setText(accounting.getFechaActual());
+        txtReceiptId.setText("000000");
+        txtReceiptDetail.setText("000000");
+        currentTimeUpdater();
+        txtClientName.setText("Cliente no registrado");
+        txtClientEmail.setText("Correo del cliente");       
+        //initialize table titles
+        newTable();
+        txtBruteTotal.setText("0.00");
+        txtTax.setText("0.00");
+        txtDiscount.setText("0.00");
+        txtNetTotal.setText("0.00");
     }
 
     /**
@@ -511,7 +527,6 @@ public class frmPlatform extends javax.swing.JInternalFrame {
 
         panelReceipt.setBackground(new java.awt.Color(255, 255, 255));
 
-        txtClientName.setEditable(false);
         txtClientName.setText("Cliente no registrado");
         txtClientName.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -519,7 +534,6 @@ public class frmPlatform extends javax.swing.JInternalFrame {
             }
         });
 
-        txtClientEmail.setEditable(false);
         txtClientEmail.setText("Correo del cliente");
 
         jLabel11.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -1081,9 +1095,25 @@ public class frmPlatform extends javax.swing.JInternalFrame {
 
     private void btnSaveReceiptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveReceiptActionPerformed
 
+        //Step ONE substracting the products from databse
         takeFromDataBase();
+        //Step TWO create receipt details in databse
         addReceiptDetail();
+        //Step THREE check if new email was entered to built a new client
+        BL_Cliente clientLogic = new BL_Cliente();
+        Boolean clientExists = clientEmailExist(txtClientEmail.getText());
+        if (!clientExists) {
+            createClient();
+        }
+        //Step FOUR modify the ghost reciept
         addReceipt();
+
+        //a new receipt can be created now
+        openGhostReceipt = true;
+
+       //clean ap visual receipt
+       visualReceiptInitializer();
+
     }//GEN-LAST:event_btnSaveReceiptActionPerformed
 
     //built receipt details table in the database
@@ -1131,8 +1161,6 @@ public class frmPlatform extends javax.swing.JInternalFrame {
 
             //instance of the object Receipt header
             Ent_EncabezadoFactura receiptHeader = new Ent_EncabezadoFactura();
-            receiptHeader.setId_encabezado(Integer.parseInt(txtReceiptId.getText()));
-
             BL_Cliente cliente = new BL_Cliente();
             int idCliente = cliente.callClientIdByEmail(txtClientEmail.getText());
             receiptHeader.setId_cliente(idCliente);
@@ -1140,14 +1168,49 @@ public class frmPlatform extends javax.swing.JInternalFrame {
             receiptHeader.setImpuesto(Substracting.getTheTax());
             receiptHeader.setDescuento(Substracting.getTheDiscount());
             receiptHeader.setTotal(Substracting.getNetTotal());
+            receiptHeader.setId_encabezado(Integer.parseInt(txtReceiptId.getText()));
 
             BL_EncabezadoFactura logicReceiptHeader = new BL_EncabezadoFactura();
-            returnId = logicReceiptHeader.callInsertarEncabezadoFactura(receiptHeader);
+            returnId = logicReceiptHeader.callModificarEncabezadoFactura(receiptHeader);
         } catch (Exception e) {
             e.printStackTrace(); // Print the full stack trace for debugging
             JOptionPane.showMessageDialog(null, "Error inserting receipt: " + e.getMessage());
         }
 
+    }
+
+    //createClient
+    private void createClient() {
+        if (txtClientEmail.getText() != FinalVariables.ghostEmail || txtClientEmail.getText() != FinalVariables.welcomeEmail) {
+            BL_Cliente clientLogic = new BL_Cliente();
+            Ent_Cliente cliente;
+            int idnewclient;
+            try {
+                cliente = clientObject();
+                idnewclient = clientLogic.callInsertarCliente(cliente);
+                if (idnewclient > 0) {
+                    JOptionPane.showMessageDialog(this, "Nuevo cliente agregado");
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+            }
+        }
+    }
+
+    //create client object
+    private Ent_Cliente clientObject() {
+        Ent_Cliente client = new Ent_Cliente();
+
+        try {
+            client.setNombre(txtClientName.getText());
+            client.setDireccion("n/a");
+            client.setTelefono("n/a");
+            client.setCorreo(txtClientEmail.getText());
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+        }
+        return client;
     }
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
@@ -1352,6 +1415,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         clearCoffeButtons();//clean all images form buttons to reset late
         Icon frameIcon = new ImageIcon(selectedImage);
         btnBlack.setIcon(frameIcon);
+        indicatorGhostReceipt();//shows gree where to go next
         hasCoffee = true;//required to control add to receipt button
         addToReceiptEnabler();
         greenPanelEnabler();
@@ -1362,6 +1426,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         clearCoffeButtons();//clean all images form buttons to reset late
         Icon frameIcon = new ImageIcon(selectedImage);
         btnLatte.setIcon(frameIcon);
+        indicatorGhostReceipt();//shows gree where to go next
         hasCoffee = true;//required to control add to receipt button
         addToReceiptEnabler();
         greenPanelEnabler();
@@ -1372,6 +1437,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         clearCoffeButtons();//clean all images form buttons to reset late
         Icon frameIcon = new ImageIcon(selectedImage);
         btnCappuccino.setIcon(frameIcon);
+        indicatorGhostReceipt();//shows gree where to go next
         hasCoffee = true;//required to control add to receipt button
         addToReceiptEnabler();
         greenPanelEnabler();
@@ -1393,6 +1459,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         clearCoffeButtons();//clean all images form buttons to reset late
         Icon frameIcon = new ImageIcon(selectedImage);
         btnWithMilk.setIcon(frameIcon);
+        indicatorGhostReceipt();//shows gree where to go next
         hasCoffee = true;//required to control add to receipt button
         addToReceiptEnabler();
         greenPanelEnabler();
@@ -1403,6 +1470,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         clearCoffeButtons();//clean all images form buttons to reset late
         Icon frameIcon = new ImageIcon(selectedImage);
         btnBrew.setIcon(frameIcon);
+        indicatorGhostReceipt();//shows gree where to go next
         hasCoffee = true;//required to control add to receipt button
         addToReceiptEnabler();
         greenPanelEnabler();
@@ -1424,6 +1492,7 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         clearCoffeButtons();//clean all images form buttons to reset late
         Icon frameIcon = new ImageIcon(selectedImage);
         btnIrish.setIcon(frameIcon);
+        indicatorGhostReceipt();//shows gree where to go next
         hasCoffee = true;//required to control add to receipt button
         addToReceiptEnabler();
         greenPanelEnabler();
@@ -1561,10 +1630,14 @@ public class frmPlatform extends javax.swing.JInternalFrame {
         showLoading();//loading message shows
         //enable cancel order button
         btnCancelOrder.setEnabled(true);
+        //Generating a ghost receipt should happends only once by order a boolean valiable should control it
+        if (openGhostReceipt) {
+            //create GHOST receipt
+            sendGhostObject();//create ghos receipt
+            openGhostReceipt = false;
+        }
         //color all the panels before green
         panelColorChanger();
-        //create GHOST receipt
-        sendGhostObject();//create ghos receipt
         Color greenBack = new Color(51, 204, 0); // RGB for green
         panelCupSize.setBackground(greenBack);
     }

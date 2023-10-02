@@ -963,7 +963,6 @@
           <SubComponents>
             <Component class="javax.swing.JTextField" name="txtClientName">
               <Properties>
-                <Property name="editable" type="boolean" value="false"/>
                 <Property name="text" type="java.lang.String" value="Cliente no registrado"/>
               </Properties>
               <Events>
@@ -975,7 +974,6 @@
             </Component>
             <Component class="javax.swing.JTextField" name="txtClientEmail">
               <Properties>
-                <Property name="editable" type="boolean" value="false"/>
                 <Property name="text" type="java.lang.String" value="Correo del cliente"/>
               </Properties>
               <AuxValues>

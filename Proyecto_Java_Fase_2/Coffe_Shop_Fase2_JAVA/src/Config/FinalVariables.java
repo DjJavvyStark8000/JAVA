@@ -59,4 +59,5 @@ public class FinalVariables {
     public static final BigDecimal priceWithMilk = new BigDecimal("250.00");//added by cup with milk
     public static final BigDecimal priceWithCream = new BigDecimal("250.00");//added by cup with milk
     public static final String ghostEmail = "ghost@format.com";
+    public static final String welcomeEmail = "Correo del cliente";
 }
