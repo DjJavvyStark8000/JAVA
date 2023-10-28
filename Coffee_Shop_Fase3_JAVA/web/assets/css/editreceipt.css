@@ -1,0 +1,81 @@
+body {
+    background-color: rgb(31, 42, 70);
+}
+
+.message {
+    visibility: hidden;
+}
+
+.tabla-titulo {
+    
+    text-align: center;
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+/* Estilos para la tabla de inputs */
+table {
+   
+    border-collapse: collapse;
+    width: 500px;
+    background-color: rgb(31, 42, 70);
+    color: white;
+}
+
+table, th, td {
+    border: 1px solid white;
+}
+
+th, td {
+    padding: 10px;
+}
+
+input {
+    width: 100%;
+}
+
+@media only screen and (max-width: 800px) {
+    .main-container {
+        display: none;
+    }
+
+    /* CSS for centering the message */
+    body,
+    html {
+
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        flex-direction: column;
+        background-color: white;
+    }
+
+    /* CSS for the message div */
+    .message {
+        visibility: visible;
+        text-align: center;
+        font-weight: bold;
+    }
+}
+
+.main-container {
+    background-color: rgb(31, 42, 70);
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+#id_factura, #cliente, #id_cliente {
+    color: white;
+}
+
+#btnGuardar{
+    width: 500px;
+    
+}

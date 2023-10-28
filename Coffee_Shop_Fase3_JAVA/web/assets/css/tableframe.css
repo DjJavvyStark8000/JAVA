@@ -1,0 +1,12 @@
+body{
+    text-align: center;
+    max-width: 100%;
+    max-height: auto;
+    margin: 0; /* Remove any default margins */
+    padding: 0; /* Remove any default padding */
+    overflow: hidden; /* Hide any content that exceeds the height */
+    background-color: lightsteelblue; /* Set a background color, in case content doesn't fill the entire height */
+}
+.tabla-productos{
+    width: 100%;
+}
